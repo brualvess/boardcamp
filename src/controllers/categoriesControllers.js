@@ -11,8 +11,9 @@ export async function createCategories(req, res){
         return
     }
     try{
-        const {rows:users} = await connection.query(`SELECT * FROM categories WHERE name = '${datas.name}'`)
-        console.log(users)
+        const {rows:users} = await connection.query(
+            `SELECT * FROM categories WHERE name = '${datas.name}'`
+            )
         if(users.length != 0 ){
             res.sendStatus(409)
             return
@@ -21,7 +22,20 @@ export async function createCategories(req, res){
         res.sendStatus(500)
         return
     }
-   await connection.query(`INSERT INTO categories (name) VALUES ('${datas.name}')`)
+   await connection.query(
+    `INSERT INTO categories (name) VALUES ('${datas.name}')`
+    )
     res.sendStatus(201)
+}
+export async function listCategories(req,res){
+     try{
+       const {rows:categories} = await connection.query(
+        'SELECT * FROM categories'
+        )
+        res.send(categories)
+     }catch{
+        res.sendStatus(500)
+     }
+    
 }
 
