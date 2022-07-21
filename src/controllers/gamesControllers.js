@@ -37,3 +37,13 @@ export async function createGames(req,res){
         )
    res.sendStatus(201)
 }
+export async function listGames(req,res){
+    try{
+        const {rows:games} = await connection.query(
+         'SELECT * FROM games'
+         )
+         res.send(games)
+      }catch{
+         res.sendStatus(500)
+      }
+}
