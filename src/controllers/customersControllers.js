@@ -1,6 +1,7 @@
 import { connection } from '../dbStrategy/postgres.js'
 import joi from 'joi'
 import DateExtension from '@joi/date'
+import e from 'express'
 const Joi = joi.extend(DateExtension)
 export async function createCustomers(req, res) {
     const datas = req.body
@@ -8,7 +9,7 @@ export async function createCustomers(req, res) {
         name: joi.string().required(),
         phone: joi.string().min(10).max(11).pattern(/^[0-9]+$/),
         cpf: joi.string().length(11).pattern(/^[0-9]+$/),
-        birthday:Joi.date().format('YYYY-MM-DD')
+        birthday: Joi.date().format('YYYY-MM-DD')
 
     })
     const { error } = schemaCustomers.validate(datas)
@@ -18,10 +19,9 @@ export async function createCustomers(req, res) {
     }
     try {
         const { rows: cpf } = await connection.query(
-            `SELECT * FROM customers WHERE cpf = '${datas.cpf}'`
+            'SELECT * FROM customers WHERE cpf =$1', [datas.cpf]
         )
-        console.log(cpf)
-        if (cpf.length != 0 ) {
+        if (cpf.length != 0) {
             res.sendStatus(409)
             return
         }
@@ -29,7 +29,7 @@ export async function createCustomers(req, res) {
         res.sendStatus(500)
         return
     }
-    
+
     await connection.query(
         `INSERT INTO customers(
             name,
@@ -44,4 +44,32 @@ export async function createCustomers(req, res) {
             )`
     )
     res.sendStatus(201)
+}
+export async function listCustomers(req, res) {
+    const cpf = req.query.cpf
+    if(cpf){
+        const { rows: getCpf } = await connection.query(
+            'SELECT * FROM customers WHERE cpf LIKE $1', [cpf + '%']
+        )
+        res.send(getCpf)
+        return
+    }
+    const { rows: getCpf } = await connection.query(
+        'SELECT * FROM customers'
+    )
+    res.send(getCpf)
+}
+export async function listWithId(req, res) {
+    const id = parseInt(req.params.id)
+    const { rows: getUser } = await connection.query(
+        'SELECT * FROM customers WHERE  id =$1', [id]
+    )
+    if (getUser.length != 0) {
+        res.send(getUser)
+        return
+    } else {
+        res.sendStatus(404)
+        return
+    }
+
 }
