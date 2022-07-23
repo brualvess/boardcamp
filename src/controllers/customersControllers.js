@@ -1,7 +1,6 @@
 import { connection } from '../dbStrategy/postgres.js'
 import joi from 'joi'
 import DateExtension from '@joi/date'
-import e from 'express'
 const Joi = joi.extend(DateExtension)
 export async function createCustomers(req, res) {
     const datas = req.body

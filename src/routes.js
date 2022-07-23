@@ -12,6 +12,8 @@ import { createCustomers,
          listWithId,
          updateCustomers
 } from './controllers/customersControllers.js';
+import { createRentals } from './controllers/rentalsControllers.js';
+ 
 
 const router = Router()
 
@@ -29,4 +31,6 @@ router.get('/customers', listCustomers)
 router.get('/customers/:id', listWithId)
 router.put('/customers/:id', updateCustomers)
 
+// Customer rentals
+router.post('/rentals', createRentals)
 export default router;
