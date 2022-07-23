@@ -40,10 +40,16 @@ export async function createGames(req,res){
 export async function listGames(req,res){
     try{
         const {rows:games} = await connection.query(
-         'SELECT * FROM games'
+            `SELECT 
+             games.*,
+             categories.name AS "categoryName"
+             FROM games 
+             JOIN categories
+             ON games."categoryId" = categories.id`
          )
-         res.send(games)
+        res.send(games)
       }catch{
          res.sendStatus(500)
       }
+      
 }
