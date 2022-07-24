@@ -218,6 +218,7 @@ export async function finishRentals(req, res) {
     }
     if(rentals[0].returnDate != null){
         res.sendStatus(400)
+        return
     }
     await connection.query(
         `UPDATE rentals 
@@ -238,6 +239,26 @@ export async function finishRentals(req, res) {
         SET "delayFee" = $1 WHERE id = $2
     `, [valueDelay, idRentals])
     }
+    res.sendStatus(200)
+}
+
+export async function deleteRentals(req, res){
+    const idRentals = parseInt(req.params.id)
+    const { rows: rentals } = await connection.query(
+        `SELECT * FROM rentals WHERE id = $1`, [idRentals]
+    )
+    if (rentals.length == 0) {
+        res.sendStatus(404)
+        return
+    }
+    if(rentals[0].returnDate == null){
+        res.sendStatus(400)
+        return
+    }
+    await connection.query(
+        `DELETE FROM rentals 
+        WHERE id = $1`,[idRentals]
+    )
     res.sendStatus(200)
 }
 
