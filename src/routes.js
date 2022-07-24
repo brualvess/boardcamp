@@ -12,7 +12,9 @@ import { createCustomers,
          listWithId,
          updateCustomers
 } from './controllers/customersControllers.js';
-import { createRentals } from './controllers/rentalsControllers.js';
+import { createRentals,
+         listRentals
+} from './controllers/rentalsControllers.js';
  
 
 const router = Router()
@@ -33,4 +35,6 @@ router.put('/customers/:id', updateCustomers)
 
 // Customer rentals
 router.post('/rentals', createRentals)
+router.get('/rentals', listRentals)
+
 export default router;
