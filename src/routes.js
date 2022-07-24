@@ -13,7 +13,8 @@ import { createCustomers,
          updateCustomers
 } from './controllers/customersControllers.js';
 import { createRentals,
-         listRentals
+         listRentals,
+         finishRentals
 } from './controllers/rentalsControllers.js';
  
 
@@ -36,5 +37,6 @@ router.put('/customers/:id', updateCustomers)
 // Customer rentals
 router.post('/rentals', createRentals)
 router.get('/rentals', listRentals)
+router.post('/rentals/:id/return', finishRentals)
 
 export default router;

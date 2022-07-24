@@ -2,6 +2,7 @@ import { connection } from '../dbStrategy/postgres.js'
 import joi from 'joi'
 import dayjs from 'dayjs'
 
+
 export async function createRentals(req, res) {
     const datas = req.body
     const date = dayjs().locale('pt-br').format('YYYY-MM-DD')
@@ -154,8 +155,8 @@ export async function listRentals(req, res) {
             res.send(newArray)
             return
         } else {
-                const { rows: getRentals } = await connection.query(
-                    `SELECT rentals.*,
+            const { rows: getRentals } = await connection.query(
+                `SELECT rentals.*,
                      customers.id AS idc,  
                      customers.name AS nc,
                      games.id AS idg,
@@ -170,38 +171,75 @@ export async function listRentals(req, res) {
                     JOIN categories 
                     ON games."categoryId" = categories.id
                     `
-                )
-                const newArray = []
-                for (let i = 0; i < getRentals.length; i++) {
-                    const obj = getRentals[i]
-                    newArray.push({
-                        id: obj.id,
-                        customerId: obj.customerId,
-                        gameId: obj.gameId,
-                        rentDate: obj.rentDate,
-                        daysRented: obj.daysRented,
-                        returnDate: obj.returnDate,
-                        originalPrice: obj.originalPrice,
-                        delayFee: obj.delayFee,
-                        customer: {
-                            id: obj.idc,
-                            name: obj.nc
-                        },
-                        game: {
-                            id: obj.idg,
-                            name: obj.name,
-                            categoryId: obj.categoryId,
-                            categoryName: obj.cn
-                        }
-                    })
-                }
-    
-                res.send(newArray)
-                return
+            )
+            const newArray = []
+            for (let i = 0; i < getRentals.length; i++) {
+                const obj = getRentals[i]
+                newArray.push({
+                    id: obj.id,
+                    customerId: obj.customerId,
+                    gameId: obj.gameId,
+                    rentDate: obj.rentDate,
+                    daysRented: obj.daysRented,
+                    returnDate: obj.returnDate,
+                    originalPrice: obj.originalPrice,
+                    delayFee: obj.delayFee,
+                    customer: {
+                        id: obj.idc,
+                        name: obj.nc
+                    },
+                    game: {
+                        id: obj.idg,
+                        name: obj.name,
+                        categoryId: obj.categoryId,
+                        categoryName: obj.cn
+                    }
+                })
             }
-        
+
+            res.send(newArray)
+            return
+        }
+
     } catch {
         res.sendStatus(500)
     }
 }
+
+export async function finishRentals(req, res) {
+    const idRentals = parseInt(req.params.id)
+    const date = dayjs().locale('pt-br').format('YYYY-MM-DD')
+    const { rows: rentals } = await connection.query(
+        `SELECT * FROM rentals WHERE id = $1`, [idRentals]
+    )
+    if (rentals.length == 0) {
+        res.sendStatus(404)
+        return
+    }
+    if(rentals[0].returnDate != null){
+        res.sendStatus(400)
+    }
+    await connection.query(
+        `UPDATE rentals 
+        SET "returnDate" = $1 WHERE id = $2
+    `, [date, idRentals])
+    
+    const { rows: pricePerDay } = await connection.query(
+        'SELECT "pricePerDay" FROM games WHERE id =$1',
+        [rentals[0].gameId]
+    )
+    const dateReturn = rentals[0].rentDate
+    const delay = dayjs(date).diff(dateReturn, "day")
+    if (delay > rentals[0].daysRented) {
+        const valueDelay =
+            (delay - rentals[0].daysRented) * pricePerDay[0].pricePerDay
+        await connection.query(
+            `UPDATE rentals 
+        SET "delayFee" = $1 WHERE id = $2
+    `, [valueDelay, idRentals])
+    }
+    res.sendStatus(200)
+}
+
+
 
