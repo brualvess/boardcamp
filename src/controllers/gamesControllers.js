@@ -5,6 +5,7 @@ export async function createGames(req,res){
     const datas = req.body
     const schemaCategorie = joi.object({
         name: joi.string().required(),
+        image: joi.string().allow(''),
         stockTotal:joi.number().greater(0),
         categoryId: joi.number(),
         pricePerDay: joi.number().greater(0),
